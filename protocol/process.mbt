@@ -294,6 +294,11 @@ pub fn process(text : String) -> String {
     }
     "visit" => {
       let doc = @jsonc.parse(request.source, options=parse_options)
+      if doc.tokens.length() > 20000 {
+        return failure(
+          InvalidOptions("visitor response exceeds 20000 source tokens"),
+        ).stringify()
+      }
       let events : Array[Json] = []
       let count = @jsonc.visit(doc, e => {
         events.push({

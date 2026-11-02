@@ -44,6 +44,8 @@ test('visitor handles large flat configurations and reports stable paths',()=>{
   const r=run({op:'visit',source});assert.equal(r.ok,true);assert.equal(r.events.filter(e=>e.kind==='literal').length,3000);
   assert.deepEqual(r.events.filter(e=>e.kind==='literal').at(-1).path,['values',2999]);
   assert.deepEqual(run({op:'locate',source,offset:source.lastIndexOf('2999')}).path,['values',2999]);
+  const oversized='['+Array(10001).fill('0').join(',')+']';
+  assert.equal(run({op:'visit',source:oversized}).code,'InvalidOptions');
 });
 test('formatting and comment stripping do not rewrite string contents',()=>{
   const source='{"url":"https://host/a/*x*/","note":"//😀",/*real*/"a":[1,2,]}';

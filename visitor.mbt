@@ -22,6 +22,22 @@ priv struct VisitFrame {
 ///|
 /// Trivia whitespace is omitted; comments and separators are delivered explicitly.
 pub fn visit(doc : Document, callback : (Event) -> Bool) -> Int {
+  // Parse errors can truncate the tree while retaining every source token.
+  // Preflight raw token nesting before allocating event paths, even if the
+  // diagnostic budget was exhausted before the parser reached the depth error.
+  let mut nesting = 0
+  for token in doc.tokens {
+    match token.kind {
+      OpenBrace | OpenBracket => {
+        nesting += 1
+        if nesting > 512 {
+          return 0
+        }
+      }
+      CloseBrace | CloseBracket => if nesting > 0 { nesting -= 1 }
+      _ => ()
+    }
+  }
   let mut delivered = 0
   let stack : Array[VisitFrame] = []
   for token in doc.tokens {

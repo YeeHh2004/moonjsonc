@@ -38,6 +38,10 @@ property, literal, separator, comment and unknown events. Returning false stops
 delivery. It does not implement per-subtree pruning or a streaming reader.
 Diagnostics are read from the document separately. Visitor traversal is linear
 in token count apart from copying paths (bounded by nesting depth).
+Raw token nesting above 512 is refused before event delivery (`visit` returns
+zero); this prevents a malformed stream from bypassing the parser's tree-depth
+limit. The JSON transport additionally caps visitor responses at 20,000 source
+tokens; direct MoonBit callers can stream events through their callback.
 
 ## Structural editing
 
