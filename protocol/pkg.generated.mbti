@@ -1,0 +1,13 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "YeeHh2004/moonjsonc/protocol"
+
+// Values
+pub fn process(String) -> String
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits

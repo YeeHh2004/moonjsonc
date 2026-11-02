@@ -1,4 +1,5 @@
-///| All offsets and lengths are UTF-16 code units, on every backend.
+///|
+/// All offsets and lengths are UTF-16 code units, on every backend.
 pub(all) enum TokenKind {
   OpenBrace
   CloseBrace
@@ -48,7 +49,9 @@ pub(all) enum NodeKind {
 } derive(Eq, @debug.Debug)
 
 ///| Property children are [key, value]; object children are properties.
-///| Scalar value is decoded Json; original numeric spelling stays in source.
+
+///|
+/// Scalar value is decoded Json; original numeric spelling stays in source.
 pub(all) struct Node {
   kind : NodeKind
   offset : Int
@@ -76,8 +79,13 @@ pub(all) struct ParseOptions {
 
 ///|
 pub fn ParseOptions::default() -> ParseOptions {
-  { allow_comments: true, allow_trailing_comma: true, allow_empty: false,
-    max_depth: 128, max_errors: 100 }
+  {
+    allow_comments: true,
+    allow_trailing_comma: true,
+    allow_empty: false,
+    max_depth: 128,
+    max_errors: 100,
+  }
 }
 
 ///|
@@ -109,7 +117,7 @@ pub(all) struct FormatOptions {
 
 ///|
 pub fn FormatOptions::default() -> FormatOptions {
-  { indent_size: 2, use_tabs: false, eol: "\n", final_newline: false }
+  { indent_size: 2, use_tabs: false, eol: "\n", final_newline: false, }
 }
 
 ///|
@@ -122,7 +130,8 @@ pub(all) enum EditError {
   InvalidOptions(String)
 } derive(Eq, @debug.Debug)
 
-///| Values are strict JSON source to preserve exact number spelling.
+///|
+/// Values are strict JSON source to preserve exact number spelling.
 pub(all) enum Operation {
   Set(Array[PathSegment], String)
   Remove(Array[PathSegment])

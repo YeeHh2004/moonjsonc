@@ -1,7 +1,9 @@
 import {
   "YeeHh2004/moonjsonc/protocol",
 }
+
 pkgtype(kind: "executable")
+
 options(
   link: { "js": { "exports": [ "process" ], "format": "esm" } },
 )

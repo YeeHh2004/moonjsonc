@@ -1,9 +1,17 @@
 name = "YeeHh2004/moonjsonc"
+
 version = "0.1.0"
+
 readme = "README.md"
+
 repository = "https://github.com/YeeHh2004/moonjsonc"
+
 license = "MIT"
+
 keywords = [ "jsonc", "json", "configuration", "editor", "source-editing" ]
+
 preferred_target = "wasm-gc"
+
 supported_targets = "+js+wasm-gc"
+
 description = "Source-preserving JSON/JSONC editing, tolerant syntax trees, formatting and transactional configuration changes in MoonBit"

@@ -1,0 +1,5 @@
+import {
+  "YeeHh2004/moonjsonc" @jsonc,
+}
+
+pkgtype(kind: "executable")

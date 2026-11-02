@@ -1,0 +1,217 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "YeeHh2004/moonjsonc"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn apply_edits(String, Array[TextEdit]) -> Result[String, EditError]
+
+pub fn find_node(Node, Array[PathSegment]) -> Node?
+
+pub fn format(String, options? : FormatOptions, range? : TextRange?) -> Result[Array[TextEdit], EditError]
+
+pub fn get_location(Document, Int) -> Result[Location, EditError]
+
+pub fn insert(String, Array[PathSegment], Int, String, options? : FormatOptions) -> Result[Array[TextEdit], EditError]
+
+pub fn modify(String, Array[PathSegment], String?, options? : FormatOptions) -> Result[Array[TextEdit], EditError]
+
+pub fn node_at_offset(Node, Int, include_right_bound? : Bool) -> Node?
+
+pub fn node_value(Node) -> Json
+
+pub fn parse(String, options? : ParseOptions) -> Document
+
+pub fn scan(String, ignore_trivia? : Bool) -> Array[Token]
+
+pub fn strip_comments(String, replace_with_spaces? : Bool) -> String
+
+pub fn to_pointer(Array[PathSegment]) -> String
+
+pub fn transact(String, Array[Operation], options? : FormatOptions, expected_source? : String?) -> Result[Transaction, EditError]
+
+pub fn visit(Document, (Event) -> Bool) -> Int
+
+// Errors
+
+// Types and methods
+pub(all) struct Diagnostic {
+  code : String
+  offset : Int
+  length : Int
+  message : String
+} derive(Eq, @debug.Debug)
+pub fn Diagnostic::equal(Self, Self) -> Bool
+pub fn Diagnostic::not_equal(Self, Self) -> Bool
+pub fn Diagnostic::to_repr(Self) -> @debug.Repr
+
+pub(all) struct Document {
+  text : String
+  tokens : Array[Token]
+  root : Node?
+  diagnostics : Array[Diagnostic]
+} derive(@debug.Debug)
+pub fn Document::to_repr(Self) -> @debug.Repr
+
+pub(all) enum EditError {
+  InvalidDocument(Array[Diagnostic])
+  InvalidValue(Array[Diagnostic])
+  InvalidPath(String)
+  InvalidEdit(String)
+  Conflict(String)
+  InvalidOptions(String)
+} derive(Eq, @debug.Debug)
+pub fn EditError::equal(Self, Self) -> Bool
+pub fn EditError::not_equal(Self, Self) -> Bool
+pub fn EditError::to_repr(Self) -> @debug.Repr
+
+pub(all) struct Event {
+  kind : String
+  offset : Int
+  length : Int
+  path : Array[PathSegment]
+  value : String
+} derive(Eq, @debug.Debug)
+pub fn Event::equal(Self, Self) -> Bool
+pub fn Event::not_equal(Self, Self) -> Bool
+pub fn Event::to_repr(Self) -> @debug.Repr
+
+pub(all) struct FormatOptions {
+  indent_size : Int
+  use_tabs : Bool
+  eol : String
+  final_newline : Bool
+} derive(Eq, @debug.Debug)
+pub fn FormatOptions::default() -> Self
+pub fn FormatOptions::equal(Self, Self) -> Bool
+pub fn FormatOptions::not_equal(Self, Self) -> Bool
+pub fn FormatOptions::to_repr(Self) -> @debug.Repr
+
+pub(all) struct Location {
+  path : Array[PathSegment]
+  is_property_key : Bool
+  offset : Int
+  line : Int
+  column : Int
+} derive(Eq, @debug.Debug)
+pub fn Location::equal(Self, Self) -> Bool
+pub fn Location::not_equal(Self, Self) -> Bool
+pub fn Location::to_repr(Self) -> @debug.Repr
+
+pub(all) struct Node {
+  kind : NodeKind
+  offset : Int
+  length : Int
+  value : Json
+  children : Array[Node]
+} derive(@debug.Debug)
+pub fn Node::to_repr(Self) -> @debug.Repr
+
+pub(all) enum NodeKind {
+  ObjectNode
+  ArrayNode
+  PropertyNode
+  StringNode
+  NumberNode
+  BooleanNode
+  NullNode
+} derive(Eq, @debug.Debug)
+pub fn NodeKind::equal(Self, Self) -> Bool
+pub fn NodeKind::not_equal(Self, Self) -> Bool
+pub fn NodeKind::to_repr(Self) -> @debug.Repr
+
+pub(all) enum Operation {
+  Set(Array[PathSegment], String)
+  Remove(Array[PathSegment])
+  Insert(Array[PathSegment], Int, String)
+  Test(Array[PathSegment], String)
+} derive(Eq, @debug.Debug)
+pub fn Operation::equal(Self, Self) -> Bool
+pub fn Operation::not_equal(Self, Self) -> Bool
+pub fn Operation::to_repr(Self) -> @debug.Repr
+
+pub(all) struct ParseOptions {
+  allow_comments : Bool
+  allow_trailing_comma : Bool
+  allow_empty : Bool
+  max_depth : Int
+  max_errors : Int
+} derive(Eq, @debug.Debug)
+pub fn ParseOptions::default() -> Self
+pub fn ParseOptions::equal(Self, Self) -> Bool
+pub fn ParseOptions::not_equal(Self, Self) -> Bool
+pub fn ParseOptions::to_repr(Self) -> @debug.Repr
+
+pub(all) enum PathSegment {
+  Key(String)
+  Index(Int)
+} derive(Eq, @debug.Debug)
+pub fn PathSegment::equal(Self, Self) -> Bool
+pub fn PathSegment::not_equal(Self, Self) -> Bool
+pub fn PathSegment::to_repr(Self) -> @debug.Repr
+
+pub(all) struct TextEdit {
+  offset : Int
+  length : Int
+  content : String
+} derive(Eq, @debug.Debug)
+pub fn TextEdit::equal(Self, Self) -> Bool
+pub fn TextEdit::not_equal(Self, Self) -> Bool
+pub fn TextEdit::to_repr(Self) -> @debug.Repr
+
+pub(all) struct TextRange {
+  offset : Int
+  length : Int
+} derive(Eq, @debug.Debug)
+pub fn TextRange::equal(Self, Self) -> Bool
+pub fn TextRange::not_equal(Self, Self) -> Bool
+pub fn TextRange::to_repr(Self) -> @debug.Repr
+
+pub(all) struct Token {
+  kind : TokenKind
+  offset : Int
+  length : Int
+  value : String
+  error : String?
+} derive(Eq, @debug.Debug)
+pub fn Token::equal(Self, Self) -> Bool
+pub fn Token::not_equal(Self, Self) -> Bool
+pub fn Token::to_repr(Self) -> @debug.Repr
+
+pub(all) enum TokenKind {
+  OpenBrace
+  CloseBrace
+  OpenBracket
+  CloseBracket
+  Colon
+  Comma
+  StringToken
+  NumberToken
+  TrueToken
+  FalseToken
+  NullToken
+  LineComment
+  BlockComment
+  Whitespace
+  LineBreak
+  Unknown
+  Eof
+} derive(Eq, @debug.Debug)
+pub fn TokenKind::equal(Self, Self) -> Bool
+pub fn TokenKind::not_equal(Self, Self) -> Bool
+pub fn TokenKind::to_repr(Self) -> @debug.Repr
+
+pub(all) struct Transaction {
+  text : String
+  edits : Array[TextEdit]
+  applied : Int
+} derive(Eq, @debug.Debug)
+pub fn Transaction::equal(Self, Self) -> Bool
+pub fn Transaction::not_equal(Self, Self) -> Bool
+pub fn Transaction::to_repr(Self) -> @debug.Repr
+
+// Type aliases
+
+// Traits

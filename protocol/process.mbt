@@ -51,17 +51,30 @@ priv struct Request {
 
 ///|
 fn diagnostics(items : Array[@jsonc.Diagnostic]) -> Json {
-  @json.to_json(items.map(d => {
-    let result : Json = { "code": d.code, "offset": d.offset, "length": d.length, "message": d.message }
-    result
-  }))
+  @json.to_json(
+    items.map(d => {
+      let result : Json = {
+        "code": d.code,
+        "offset": d.offset,
+        "length": d.length,
+        "message": d.message,
+      }
+      result
+    }),
+  )
 }
 
 ///|
 fn failure(error : @jsonc.EditError) -> Json {
   let (code, message, details) = match error {
-    InvalidDocument(items) => ("InvalidDocument", "source contains errors; editing refused", diagnostics(items))
-    InvalidValue(items) => ("InvalidValue", "replacement must be strict JSON", diagnostics(items))
+    InvalidDocument(items) =>
+      (
+        "InvalidDocument",
+        "source contains errors; editing refused",
+        diagnostics(items),
+      )
+    InvalidValue(items) =>
+      ("InvalidValue", "replacement must be strict JSON", diagnostics(items))
     InvalidPath(s) => ("InvalidPath", s, Json::null())
     InvalidEdit(s) => ("InvalidEdit", s, Json::null())
     Conflict(s) => ("Conflict", s, Json::null())
@@ -71,8 +84,12 @@ fn failure(error : @jsonc.EditError) -> Json {
 }
 
 ///|
-fn path_of(value : Array[Json]) -> Result[Array[@jsonc.PathSegment], @jsonc.EditError] {
-  if value.length() > 128 { return Err(InvalidPath("path exceeds 128 segments")) }
+fn path_of(
+  value : Array[Json],
+) -> Result[Array[@jsonc.PathSegment], @jsonc.EditError] {
+  if value.length() > 128 {
+    return Err(InvalidPath("path exceeds 128 segments"))
+  }
   let path : Array[@jsonc.PathSegment] = []
   for part in value {
     match part {
@@ -83,7 +100,10 @@ fn path_of(value : Array[Json]) -> Result[Array[@jsonc.PathSegment], @jsonc.Edit
         }
         path.push(Index(n.to_int()))
       }
-      _ => return Err(InvalidPath("path entries must be string keys or integer indices"))
+      _ =>
+        return Err(
+          InvalidPath("path entries must be string keys or integer indices"),
+        )
     }
   }
   Ok(path)
@@ -91,7 +111,14 @@ fn path_of(value : Array[Json]) -> Result[Array[@jsonc.PathSegment], @jsonc.Edit
 
 ///|
 fn path_json(path : Array[@jsonc.PathSegment]) -> Json {
-  @json.to_json(path.map(p => match p { Key(k) => Json::string(k); Index(i) => @json.to_json(i) }))
+  @json.to_json(
+    path.map(p => {
+      match p {
+        Key(k) => Json::string(k)
+        Index(i) => @json.to_json(i)
+      }
+    }),
+  )
 }
 
 ///|
@@ -106,61 +133,116 @@ fn node_json(source : String, node : @jsonc.Node) -> Json {
     NullNode => "null"
   }
   let raw = source[node.offset:node.offset + node.length].to_owned()
-  let value = if node.kind == NumberNode { Json::string(raw) } else { node.value }
+  let value = if node.kind == NumberNode {
+    Json::string(raw)
+  } else {
+    node.value
+  }
   {
-    "kind": kind, "offset": node.offset, "length": node.length, "raw": raw, "value": value,
-    "children": @json.to_json(node.children.map(child => node_json(source, child))),
+    "kind": kind,
+    "offset": node.offset,
+    "length": node.length,
+    "raw": raw,
+    "value": value,
+    "children": @json.to_json(
+      node.children.map(child => node_json(source, child)),
+    ),
   }
 }
 
 ///|
 fn edits_json(edits : Array[@jsonc.TextEdit]) -> Json {
-  @json.to_json(edits.map(e => {
-    let result : Json = { "offset": e.offset, "length": e.length, "content": e.content }
-    result
-  }))
+  @json.to_json(
+    edits.map(e => {
+      let result : Json = {
+        "offset": e.offset,
+        "length": e.length,
+        "content": e.content,
+      }
+      result
+    }),
+  )
 }
 
 ///|
-fn edited(source : String, result : Result[Array[@jsonc.TextEdit], @jsonc.EditError]) -> Json {
+fn edited(
+  source : String,
+  result : Result[Array[@jsonc.TextEdit], @jsonc.EditError],
+) -> Json {
   match result {
     Err(e) => failure(e)
-    Ok(edits) => match @jsonc.apply_edits(source, edits) {
-      Err(e) => failure(e)
-      Ok(text) => { "ok": true, "source": text, "edits": edits_json(edits), "changed": text != source }
-    }
+    Ok(edits) =>
+      match @jsonc.apply_edits(source, edits) {
+        Err(e) => failure(e)
+        Ok(text) =>
+          {
+            "ok": true,
+            "source": text,
+            "edits": edits_json(edits),
+            "changed": text != source,
+          }
+      }
   }
 }
 
 ///| Version 1 JSON transport. Algorithms remain in the MoonBit library.
-///| Request <= 2 Mi UTF16 units, source <= 1 Mi, batches <= 128 operations.
+
+///|
+/// Request <= 2 Mi UTF16 units, source <= 1 Mi, batches <= 128 operations.
 pub fn process(text : String) -> String {
-  if text.length() > 2097152 { return failure(InvalidOptions("request exceeds 2 Mi UTF-16 units")).stringify() }
+  if text.length() > 2097152 {
+    return failure(InvalidOptions("request exceeds 2 Mi UTF-16 units")).stringify()
+  }
   let mut depth = 0
   let mut quoted = false
   let mut escaped = false
   for c in text {
     if quoted {
-      if escaped { escaped = false }
-      else if c == '\\' { escaped = true }
-      else if c == '"' { quoted = false }
-    } else if c == '"' { quoted = true }
-    else if c == '{' || c == '[' {
+      if escaped {
+        escaped = false
+      } else if c == '\\' {
+        escaped = true
+      } else if c == '"' {
+        quoted = false
+      }
+    } else if c == '"' {
+      quoted = true
+    } else if c == '{' || c == '[' {
       depth += 1
-      if depth > 160 { return failure(InvalidOptions("request nesting exceeds 160")).stringify() }
-    } else if c == '}' || c == ']' { depth -= 1 }
+      if depth > 160 {
+        return failure(InvalidOptions("request nesting exceeds 160")).stringify()
+      }
+    } else if c == '}' || c == ']' {
+      depth -= 1
+    }
   }
   let request : Request = @json.from_json(@json.parse(text)) catch {
-    _ => return failure(InvalidOptions("invalid JSON request schema")).stringify()
+    _ =>
+      return failure(InvalidOptions("invalid JSON request schema")).stringify()
   }
-  if request.source.length() > 1048576 { return failure(InvalidOptions("source exceeds 1 Mi UTF-16 units")).stringify() }
+  if request.source.length() > 1048576 {
+    return failure(InvalidOptions("source exceeds 1 Mi UTF-16 units")).stringify()
+  }
   let parse_options : @jsonc.ParseOptions = match request.options {
     None => @jsonc.ParseOptions::default()
-    Some(o) => { allow_comments: o.allowComments.unwrap_or(true), allow_trailing_comma: o.allowTrailingComma.unwrap_or(true), allow_empty: o.allowEmpty.unwrap_or(false), max_depth: o.maxDepth.unwrap_or(128), max_errors: o.maxErrors.unwrap_or(100) }
+    Some(o) =>
+      {
+        allow_comments: o.allowComments.unwrap_or(true),
+        allow_trailing_comma: o.allowTrailingComma.unwrap_or(true),
+        allow_empty: o.allowEmpty.unwrap_or(false),
+        max_depth: o.maxDepth.unwrap_or(128),
+        max_errors: o.maxErrors.unwrap_or(100),
+      }
   }
   let format_options : @jsonc.FormatOptions = match request.options {
     None => @jsonc.FormatOptions::default()
-    Some(o) => { indent_size: o.indentSize.unwrap_or(2), use_tabs: o.useTabs.unwrap_or(false), eol: o.eol.unwrap_or("\n"), final_newline: o.finalNewline.unwrap_or(false) }
+    Some(o) =>
+      {
+        indent_size: o.indentSize.unwrap_or(2),
+        use_tabs: o.useTabs.unwrap_or(false),
+        eol: o.eol.unwrap_or("\n"),
+        final_newline: o.finalNewline.unwrap_or(false),
+      }
   }
   let path = match path_of(request.path.unwrap_or([])) {
     Ok(p) => p
@@ -169,76 +251,189 @@ pub fn process(text : String) -> String {
   let response : Json = match request.op {
     "parse" | "check" => {
       let doc = @jsonc.parse(request.source, options=parse_options)
-      { "ok": true, "valid": doc.diagnostics.is_empty(), "diagnostics": diagnostics(doc.diagnostics), "tree": match doc.root { Some(n) => node_json(request.source, n); None => Json::null() } }
+      {
+        "ok": true,
+        "valid": doc.diagnostics.is_empty(),
+        "diagnostics": diagnostics(doc.diagnostics),
+        "tree": match doc.root {
+          Some(n) => node_json(request.source, n)
+          None => Json::null()
+        },
+      }
     }
     "find" => {
       let doc = @jsonc.parse(request.source, options=parse_options)
-      let node = match doc.root { Some(n) => @jsonc.find_node(n, path); None => None }
-      { "ok": true, "node": match node { Some(n) => node_json(request.source, n); None => Json::null() }, "diagnostics": diagnostics(doc.diagnostics) }
+      let node = match doc.root {
+        Some(n) => @jsonc.find_node(n, path)
+        None => None
+      }
+      {
+        "ok": true,
+        "node": match node {
+          Some(n) => node_json(request.source, n)
+          None => Json::null()
+        },
+        "diagnostics": diagnostics(doc.diagnostics),
+      }
     }
     "locate" => {
       let doc = @jsonc.parse(request.source, options=parse_options)
       match @jsonc.get_location(doc, request.offset.unwrap_or(0)) {
         Err(e) => failure(e)
-        Ok(l) => { "ok": true, "path": path_json(l.path), "pointer": @jsonc.to_pointer(l.path), "isPropertyKey": l.is_property_key, "offset": l.offset, "line": l.line, "column": l.column }
+        Ok(l) =>
+          {
+            "ok": true,
+            "path": path_json(l.path),
+            "pointer": @jsonc.to_pointer(l.path),
+            "isPropertyKey": l.is_property_key,
+            "offset": l.offset,
+            "line": l.line,
+            "column": l.column,
+          }
       }
     }
     "visit" => {
       let doc = @jsonc.parse(request.source, options=parse_options)
       let events : Array[Json] = []
       let count = @jsonc.visit(doc, e => {
-        events.push({ "kind": e.kind, "offset": e.offset, "length": e.length, "path": path_json(e.path), "value": e.value })
+        events.push({
+          "kind": e.kind,
+          "offset": e.offset,
+          "length": e.length,
+          "path": path_json(e.path),
+          "value": e.value,
+        })
         true
       })
-      { "ok": true, "events": @json.to_json(events), "count": count, "diagnostics": diagnostics(doc.diagnostics) }
+      {
+        "ok": true,
+        "events": @json.to_json(events),
+        "count": count,
+        "diagnostics": diagnostics(doc.diagnostics),
+      }
     }
     "scan" => {
-      let tokens = @jsonc.scan(request.source, ignore_trivia=request.ignoreTrivia.unwrap_or(false))
+      let tokens = @jsonc.scan(
+        request.source,
+        ignore_trivia=request.ignoreTrivia.unwrap_or(false),
+      )
       let items = tokens.map(t => {
-        let result : Json = { "kind": token_kind(t.kind), "offset": t.offset, "length": t.length, "value": t.value, "error": @json.to_json(t.error) }
+        let result : Json = {
+          "kind": token_kind(t.kind),
+          "offset": t.offset,
+          "length": t.length,
+          "value": t.value,
+          "error": @json.to_json(t.error),
+        }
         result
       })
       { "ok": true, "tokens": @json.to_json(items) }
     }
-    "strip" => { "ok": true, "source": @jsonc.strip_comments(request.source, replace_with_spaces=request.replaceWithSpaces.unwrap_or(true)) }
+    "strip" =>
+      {
+        "ok": true,
+        "source": @jsonc.strip_comments(
+          request.source,
+          replace_with_spaces=request.replaceWithSpaces.unwrap_or(true),
+        ),
+      }
     "format" => {
-      let range : @jsonc.TextRange? = request.range.map(r => { offset: r.offset, length: r.length })
-      edited(request.source, @jsonc.format(request.source, options=format_options, range~))
+      let range : @jsonc.TextRange? = request.range.map(r => {
+        offset: r.offset,
+        length: r.length,
+      })
+      edited(
+        request.source,
+        @jsonc.format(request.source, options=format_options, range~),
+      )
     }
-    "set" => match request.value {
-      None => failure(InvalidValue([]))
-      Some(value) => edited(request.source, @jsonc.modify(request.source, path, Some(value), options=format_options))
-    }
-    "remove" => edited(request.source, @jsonc.modify(request.source, path, None, options=format_options))
-    "insert" => match request.value {
-      None => failure(InvalidValue([]))
-      Some(value) => edited(request.source, @jsonc.insert(request.source, path, request.index.unwrap_or(-1), value, options=format_options))
-    }
+    "set" =>
+      match request.value {
+        None => failure(InvalidValue([]))
+        Some(value) =>
+          edited(
+            request.source,
+            @jsonc.modify(
+              request.source,
+              path,
+              Some(value),
+              options=format_options,
+            ),
+          )
+      }
+    "remove" =>
+      edited(
+        request.source,
+        @jsonc.modify(request.source, path, None, options=format_options),
+      )
+    "insert" =>
+      match request.value {
+        None => failure(InvalidValue([]))
+        Some(value) =>
+          edited(
+            request.source,
+            @jsonc.insert(
+              request.source,
+              path,
+              request.index.unwrap_or(-1),
+              value,
+              options=format_options,
+            ),
+          )
+      }
     "apply" => {
-      let edits : Array[@jsonc.TextEdit] = request.edits.unwrap_or([]).map(e => { offset: e.offset, length: e.length, content: e.content })
+      let edits : Array[@jsonc.TextEdit] = request.edits
+        .unwrap_or([])
+        .map(e => { offset: e.offset, length: e.length, content: e.content, })
       edited(request.source, Ok(edits))
     }
     "transaction" => {
       let changes = request.operations.unwrap_or([])
-      if changes.length() > 128 { return failure(InvalidOptions("batch exceeds 128 operations")).stringify() }
+      if changes.length() > 128 {
+        return failure(InvalidOptions("batch exceeds 128 operations")).stringify()
+      }
       let operations : Array[@jsonc.Operation] = []
       for change in changes {
-        let path = match path_of(change.path) { Ok(p) => p; Err(e) => return failure(e).stringify() }
+        let path = match path_of(change.path) {
+          Ok(p) => p
+          Err(e) => return failure(e).stringify()
+        }
         let op = match change.op {
           "remove" => @jsonc.Remove(path)
           "set" | "insert" | "test" => {
-            let value = match change.value { Some(v) => v; None => return failure(InvalidValue([])).stringify() }
-            if change.op == "set" { @jsonc.Set(path, value) }
-            else if change.op == "test" { @jsonc.Test(path, value) }
-            else { @jsonc.Insert(path, change.index.unwrap_or(-1), value) }
+            let value = match change.value {
+              Some(v) => v
+              None => return failure(InvalidValue([])).stringify()
+            }
+            if change.op == "set" {
+              @jsonc.Set(path, value)
+            } else if change.op == "test" {
+              @jsonc.Test(path, value)
+            } else {
+              @jsonc.Insert(path, change.index.unwrap_or(-1), value)
+            }
           }
-          _ => return failure(InvalidOptions("unknown transaction operation")).stringify()
+          _ =>
+            return failure(InvalidOptions("unknown transaction operation")).stringify()
         }
         operations.push(op)
       }
-      match @jsonc.transact(request.source, operations, options=format_options, expected_source=request.expectedSource) {
+      match
+        @jsonc.transact(
+          request.source,
+          operations,
+          options=format_options,
+          expected_source=request.expectedSource,
+        ) {
         Err(e) => failure(e)
-        Ok(tx) => { "ok": true, "source": tx.text, "edits": edits_json(tx.edits), "applied": tx.applied, "changed": tx.text != request.source }
+        Ok(tx) =>
+          {
+            "ok": true,
+            "source": tx.text,
+            "edits": edits_json(tx.edits),
+            "applied": tx.applied,
+            "changed": tx.text != request.source,
+          }
       }
     }
     _ => failure(InvalidOptions("unknown operation"))
@@ -249,10 +444,22 @@ pub fn process(text : String) -> String {
 ///|
 fn token_kind(kind : @jsonc.TokenKind) -> String {
   match kind {
-    OpenBrace => "OpenBrace"; CloseBrace => "CloseBrace"; OpenBracket => "OpenBracket"; CloseBracket => "CloseBracket"
-    Colon => "Colon"; Comma => "Comma"; StringToken => "String"; NumberToken => "Number"
-    TrueToken => "True"; FalseToken => "False"; NullToken => "Null"
-    LineComment => "LineComment"; BlockComment => "BlockComment"; Whitespace => "Whitespace"; LineBreak => "LineBreak"
-    Unknown => "Unknown"; Eof => "Eof"
+    OpenBrace => "OpenBrace"
+    CloseBrace => "CloseBrace"
+    OpenBracket => "OpenBracket"
+    CloseBracket => "CloseBracket"
+    Colon => "Colon"
+    Comma => "Comma"
+    StringToken => "String"
+    NumberToken => "Number"
+    TrueToken => "True"
+    FalseToken => "False"
+    NullToken => "Null"
+    LineComment => "LineComment"
+    BlockComment => "BlockComment"
+    Whitespace => "Whitespace"
+    LineBreak => "LineBreak"
+    Unknown => "Unknown"
+    Eof => "Eof"
   }
 }
