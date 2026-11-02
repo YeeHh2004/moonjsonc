@@ -32,6 +32,9 @@ The JSON transport exposes number-node `value` as the original **string**.
 
 `get_location` resolves an editor cursor into a typed path. `is_property_key`
 distinguishes object key slots; `Key("")` can denote an unfinished key slot.
+The cursor is between code units: a comma, colon or closing delimiter changes
+the context only after the cursor passes it. Key context therefore persists
+after its closing quote and through trivia until the cursor passes the colon.
 `node_at_offset` locates existing syntax, while cursor lookup also describes
 insertion positions. `visit` emits source-ordered object/array begin/end,
 property, literal, separator, comment and unknown events. Returning false stops
