@@ -1,0 +1,4 @@
+import {
+  "YeeHh2004/moonjsonc" @jsonc,
+  "moonbitlang/core/json",
+}
