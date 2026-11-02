@@ -1,0 +1,11 @@
+_build/
+target/
+.mooncakes/
+node_modules/
+dist/
+web/moonjsonc.mjs
+web/build-info.json
+web/LICENSE.txt
+web/THIRD-PARTY-NOTICES.txt
+*.log
+.DS_Store
