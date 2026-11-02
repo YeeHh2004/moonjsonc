@@ -304,7 +304,10 @@ pub fn parse(
         parser.issue("InvalidCommentToken", token, "comments are disabled")
       }
     }
-    if !jc_trivia(token.kind) {
+    // Invalid symbols already have lexical diagnostics. Skipping them here
+    // permits useful recovery of the following value instead of discarding an
+    // otherwise valid subtree after a typo before the root or a member value.
+    if !jc_trivia(token.kind) && token.kind != Unknown {
       significant.push(token)
     }
   }

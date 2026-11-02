@@ -205,7 +205,8 @@ fn JcScanner::token(self : JcScanner) -> Token {
           }
         }
       } else {
-        while self.cursor < self.chars.length() &&
+        while c != '-' &&
+              self.cursor < self.chars.length() &&
               !jc_delimiter(self.chars[self.cursor]) {
           self.cursor += 1
         }
