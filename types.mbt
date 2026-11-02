@@ -136,3 +136,81 @@ pub(all) struct Transaction {
   edits : Array[TextEdit]
   applied : Int
 } derive(Eq, @debug.Debug)
+
+///|
+pub extend TokenKind with @debug.Debug::{to_repr}
+
+///|
+pub extend TokenKind with Eq::{equal, not_equal}
+
+///|
+pub extend Token with @debug.Debug::{to_repr}
+
+///|
+pub extend Token with Eq::{equal, not_equal}
+
+///|
+pub extend Diagnostic with @debug.Debug::{to_repr}
+
+///|
+pub extend Diagnostic with Eq::{equal, not_equal}
+
+///|
+pub extend NodeKind with @debug.Debug::{to_repr}
+
+///|
+pub extend NodeKind with Eq::{equal, not_equal}
+
+///|
+pub extend Node with @debug.Debug::{to_repr}
+
+///|
+pub extend Document with @debug.Debug::{to_repr}
+
+///|
+pub extend ParseOptions with @debug.Debug::{to_repr}
+
+///|
+pub extend ParseOptions with Eq::{equal, not_equal}
+
+///|
+pub extend PathSegment with @debug.Debug::{to_repr}
+
+///|
+pub extend PathSegment with Eq::{equal, not_equal}
+
+///|
+pub extend TextEdit with @debug.Debug::{to_repr}
+
+///|
+pub extend TextEdit with Eq::{equal, not_equal}
+
+///|
+pub extend TextRange with @debug.Debug::{to_repr}
+
+///|
+pub extend TextRange with Eq::{equal, not_equal}
+
+///|
+pub extend FormatOptions with @debug.Debug::{to_repr}
+
+///|
+pub extend FormatOptions with Eq::{equal, not_equal}
+
+///|
+pub extend EditError with @debug.Debug::{to_repr}
+
+///|
+pub extend EditError with Eq::{equal, not_equal}
+
+///|
+pub extend Operation with @debug.Debug::{to_repr}
+
+///|
+pub extend Operation with Eq::{equal, not_equal}
+
+///|
+pub extend Transaction with @debug.Debug::{to_repr}
+
+///|
+pub extend Transaction with Eq::{equal, not_equal}
