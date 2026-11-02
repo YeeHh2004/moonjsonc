@@ -1,0 +1,46 @@
+name: Test MoonJSONC
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: hustcer/setup-moonbit@9199da0ab63ea0c0bab1dc15f03d76e17ed4f75f # v1.22
+        with:
+          version: '0.10.14+7d59c7ec9'
+          core-version: '0.10.14+7d59c7ec9'
+      - run: moon version --all
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: moon fmt --check
+      - run: moon check --target js --deny-warn
+      - run: moon check --target wasm-gc --deny-warn
+      - run: moon info
+      - run: git diff --exit-code -- '*.mbti'
+      - run: moon test --target js --deny-warn
+      - run: moon test --target wasm-gc --deny-warn
+      - run: moon build --target wasm-gc
+      - run: node scripts/build.mjs
+      - run: node --test tests/*.test.mjs
+      - run: node scripts/check-consumer.mjs
+      - run: python scripts/check-mooncake.py
+      - name: Browser acceptance
+        if: matrix.os == 'ubuntu-24.04'
+        run: |
+          npx playwright install --with-deps chromium
+          node tests/browser.mjs
+      - uses: actions/upload-artifact@v4
+        if: matrix.os == 'ubuntu-24.04'
+        with:
+          name: moonjsonc-web
+          path: web/

@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>MoonJSONC · 配置编辑工作台</title><link rel="stylesheet" href="style.css"></head>
+<body><main>
+  <header><a class="brand" href="https://github.com/YeeHh2004/moonjsonc">◐ MoonJSONC <span>0.1</span></a><a class="repo" href="https://github.com/YeeHh2004/moonjsonc#readme">文档与源码 ↗</a></header>
+  <section class="intro"><p class="eyebrow">MOONBIT · JSON / JSONC</p><h1>改配置，<br>留下原来的注释。</h1><p>按路径修改、定位与格式化。每次操作都展示结果和文本补丁；批量修改在同一事务中完成。</p><p class="privacy">全部计算在浏览器本地完成。</p></section>
+  <nav aria-label="使用场景"><button data-preset="package" class="active">01 · 项目配置升级</button><button data-preset="settings">02 · 编辑器设置</button><button data-preset="deployment">03 · 部署参数事务</button></nav>
+  <section class="workspace">
+    <div class="panel source-panel"><div class="panel-head"><h2>原始配置</h2><span id="filename">package.jsonc</span></div><label class="sr-only" for="source">原始 JSONC</label><textarea id="source" spellcheck="false"></textarea><div class="panel-foot"><span id="cursor">UTF-16 光标位置</span><button id="locate" class="quiet">定位光标</button></div></div>
+    <div class="panel controls"><h2>结构化操作</h2><label for="path">路径 · JSON 数组</label><input id="path" spellcheck="false" value='["scripts","test"]'><label for="value">新值 · JSON 文本</label><textarea id="value" spellcheck="false">"moon test --target wasm-gc"</textarea><div class="buttons"><button id="set" class="primary">预览修改</button><button id="remove">删除该值</button><button id="format">格式化</button><button id="check">检查配置</button></div><details><summary>批量事务 · 全部成功才返回结果</summary><label class="sr-only" for="operations">事务操作 JSON 数组</label><textarea id="operations" spellcheck="false"></textarea><button id="transaction" class="primary">预览事务</button></details><p class="hint">字符串值需要双引号。路径中的字符串表示属性名，整数表示数组索引。</p></div>
+  </section>
+  <div id="status" class="status" role="status">正在加载 MoonBit 引擎…</div>
+  <section class="results"><div class="panel"><div class="panel-head"><h2>预览结果</h2><div><button id="adopt" class="quiet" disabled>采纳结果</button><button id="download" class="quiet" disabled>下载 JSONC</button></div></div><pre id="result" tabindex="0">运行一次操作后，结果会显示在这里。</pre></div><div class="panel"><div class="panel-head"><h2>补丁与诊断</h2><span>原文坐标 · UTF-16</span></div><pre id="details" tabindex="0">[]</pre></div></section>
+  <footer>纯 MoonBit 核心 · JS / Wasm GC · MIT <a href="https://github.com/YeeHh2004/moonjsonc/blob/main/docs/BEHAVIOR.md">行为契约与边界 ↗</a></footer>
+</main><script type="module" src="app.mjs"></script></body></html>

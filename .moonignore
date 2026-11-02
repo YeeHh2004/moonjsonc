@@ -1,0 +1,15 @@
+_build/
+target/
+.mooncakes/
+node_modules/
+dist/
+.github/
+web/
+cli/
+bridge/
+scripts/
+tests/
+examples/consumer/
+package.json
+package-lock.json
+*.log

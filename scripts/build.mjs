@@ -1,0 +1,20 @@
+import {execFileSync} from 'node:child_process';
+import {mkdirSync, copyFileSync, readFileSync, writeFileSync} from 'node:fs';
+import {fileURLToPath} from 'node:url';
+import {createHash} from 'node:crypto';
+const root = fileURLToPath(new URL('../', import.meta.url));
+const toolchain = '0.10.14+7d59c7ec9';
+const version=JSON.parse(readFileSync(new URL('../package.json',import.meta.url),'utf8')).version;
+const versionText = execFileSync('moon', ['version','--all'], {cwd:root,encoding:'utf8'});
+if (!versionText.includes(toolchain)) throw new Error(`Use pinned MoonBit ${toolchain}; see docs/DEVELOPMENT.md`);
+execFileSync('moon',['build','--target','js','--release'],{cwd:root,stdio:'inherit'});
+const web = new URL('../web/', import.meta.url);
+mkdirSync(web,{recursive:true});
+copyFileSync(new URL('../_build/js/release/build/bridge/bridge.js',import.meta.url),new URL('moonjsonc.mjs',web));
+copyFileSync(new URL('../LICENSE',import.meta.url),new URL('LICENSE.txt',web));
+const read = path => readFileSync(new URL('../'+path,import.meta.url),'utf8').replaceAll('\r\n','\n');
+writeFileSync(new URL('THIRD-PARTY-NOTICES.txt',web), read('licenses/NOTICE')+'\n'+read('licenses/MoonBit-core-LICENSE'));
+let sourceCommit = null;
+try { sourceCommit=execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim(); } catch {}
+writeFileSync(new URL('build-info.json',web),JSON.stringify({version,toolchain,sourceCommit,engineSha256:createHash('sha256').update(readFileSync(new URL('moonjsonc.mjs',web))).digest('hex')},null,2)+'\n');
+console.log('Built MoonBit JSONC engine and license notices.');
