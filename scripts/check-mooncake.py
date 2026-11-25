@@ -11,7 +11,9 @@ required = {'moon.mod','moon.pkg','pkg.generated.mbti','LICENSE','NOTICE.md','RE
             'protocol/process.mbt','protocol/pkg.generated.mbti','docs/BEHAVIOR.md',
             'docs/COMPATIBILITY.md','docs/SELECTION.md','licenses/NOTICE',
             'licenses/MoonBit-core-LICENSE','examples/basic/main.mbt',
-            'examples/editor/main.mbt','examples/transaction/main.mbt'}
+            'examples/editor/main.mbt','examples/transaction/main.mbt',
+            'standards_test.mbt','docs/STANDARDS.md','docs/PROPOSAL.zh-CN.md',
+            'examples/standards/main.mbt','examples/standards/moon.pkg'}
 with zipfile.ZipFile(archive) as z:
     assert z.testzip() is None
     names=set(z.namelist())

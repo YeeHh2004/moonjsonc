@@ -39,6 +39,8 @@ public package and checks its source against this checkout before running it.
 moon run examples/basic --target js
 moon run examples/editor --target wasm-gc
 moon run examples/transaction --target js
+moon run examples/standards --target js
+moon run examples/standards --target wasm-gc
 node scripts/serve.mjs
 ```
 
@@ -55,7 +57,8 @@ files, dependencies and temporary outputs are ignored by Git.
 - `edits.mbt`, `modify.mbt`, `transaction.mbt`: validated structural changes.
 - `protocol/`: bounded JSON transport, shared by hosts.
 - `bridge/`, `cli/`, `web/`: exports, filesystem adapter and interactive demo.
-- `examples/`: three direct consumers plus an independent installation example.
+- `examples/`: configuration, editor, transaction and standards examples,
+  plus an independent installation example.
 - `*_test.mbt`, `tests/`: backend tests, reference/model checks, CLI and browser.
 
 Substantive changes belong in focused commits with regression evidence. CI

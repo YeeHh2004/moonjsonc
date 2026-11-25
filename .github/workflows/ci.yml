@@ -30,6 +30,8 @@ jobs:
       - run: moon test --target js --deny-warn
       - run: moon test --target wasm-gc --deny-warn
       - run: moon build --target wasm-gc
+      - run: moon run examples/standards --target js
+      - run: moon run examples/standards --target wasm-gc
       - run: node scripts/build.mjs
       - run: node --test tests/*.test.mjs
       - run: node scripts/check-consumer.mjs

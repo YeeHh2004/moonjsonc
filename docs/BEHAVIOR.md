@@ -12,7 +12,10 @@ number spellings and comment text remain available. `ignore_trivia=true` omits
 whitespace and comments, including their token-level errors; use `parse` for
 complete document diagnostics. `parse` defaults to JSONC comments and trailing
 commas, rejects an empty document, and retains partial syntax trees on errors.
-Turn extensions off with `ParseOptions` for strict JSON validation.
+`parse_json` is the strict JSON success/error entry point; it always disables
+extensions and accepts duplicate-key syntax. Turning extensions off with
+`ParseOptions` retains the additional duplicate-key editing diagnostics.
+See [JSON standards and completion scope](STANDARDS.md).
 
 Objects contain `PropertyNode` children, each with a string key and a value
 child where recovery found a value. Arrays contain value children. Root and
@@ -20,7 +23,8 @@ children carry original source spans. Treat returned documents and their arrays
 as immutable snapshots. Query/visitor APIs expect structures returned by this
 parser, not arbitrarily assembled or mutated nodes.
 
-Duplicate properties are retained in the tree and diagnosed as `DuplicateKey`.
+With `parse`, duplicate properties are retained in the tree and diagnosed as `DuplicateKey`.
+With `parse_json`, they are valid syntax and retained without a syntax diagnostic.
 `node_value` projects them using the last value. `find_node` returns `None` for
 ambiguous keys. Editing refuses any document with diagnostics.
 
@@ -126,4 +130,6 @@ The CLI previews to stdout by default. Explicit `--write` stages a same-director
 temporary file, syncs it, compares the current source and renames it. This is a
 single-file replacement with a best-effort concurrent-change check; it is not a
 cross-process lock, multi-file transaction, or power-loss durability guarantee.
-Symbolic links are not writable targets. UTF-8 is the CLI's file encoding.
+Symbolic links are not writable targets. UTF-8 is the CLI's file encoding;
+invalid byte sequences are rejected rather than replaced. An initial BOM is
+retained by the decoder and rejected by the parser; output adds no BOM.

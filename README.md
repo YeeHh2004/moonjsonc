@@ -3,14 +3,15 @@
 [![CI](https://github.com/YeeHh2004/moonjsonc/actions/workflows/ci.yml/badge.svg)](https://github.com/YeeHh2004/moonjsonc/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-**MoonBit JSON/JSONC source editing for configuration tools, editors and automation.**
+**MoonBit standard JSON parsing and source-preserving JSON/JSONC editing.**
 
-按结构化路径修改配置，保留无关注释、排版与数字原文；提供容错语法树、光标定位、
+提供普通 JSON 严格解析，按结构化路径修改配置，保留无关注释、排版与数字原文；提供容错语法树、光标定位、
 格式化补丁，以及带前置检查的批量事务。核心解析与编辑算法全部使用 MoonBit，
 可用于 JavaScript 和 Wasm GC，不依赖浏览器、Node.js 或远程服务。
 
 [在线工作台](https://YeeHh2004.github.io/moonjsonc/) ·
 [Mooncakes](https://mooncakes.io/docs/YeeHh2004/moonjsonc) ·
+[JSON standards and examples](docs/STANDARDS.md) ·
 [行为契约](docs/BEHAVIOR.md) · [功能对照](docs/COMPATIBILITY.md) ·
 [选题与生态差异](docs/SELECTION.md)
 
@@ -36,7 +37,7 @@ unrelated whitespace and `9007199254740993` remain exactly as written.
 Tested/pinned toolchain: **moonc 0.10.14+7d59c7ec9**, with matching core.
 
 ```sh
-moon add YeeHh2004/moonjsonc@0.1.0
+moon add YeeHh2004/moonjsonc@0.1.1
 ```
 
 Add the import to your package's `moon.pkg`:
@@ -65,10 +66,34 @@ The example uses `unwrap` for brevity. Applications should handle `Result` error
 and display diagnostics; errors never include a partially committed transaction.
 `examples/consumer` is an independent, executable installation example.
 
+## Standard JSON, independently usable
+
+Ordinary JSON targets the complete text grammar of **RFC 8259 (December 2017)**
+and **ECMA-404, second edition (December 2017)** within the documented resource
+limits. `parse_json(text)` returns `Result[Document, Array[Diagnostic]]`; it
+accepts all six value types and scalar roots, and always disables comments,
+trailing commas and empty documents. Duplicate names remain valid syntax and
+are retained in the tree; configuration edits continue to reject ambiguity.
+
+```sh
+moon run examples/standards --target js
+moon run examples/standards --target wasm-gc
+node cli/moonjsonc.mjs check-json input.json
+node cli/moonjsonc.mjs parse-json input.json
+```
+
+Build the CLI engine with the commands below before using it. `42` succeeds as
+a number root; `[1,]` fails with `TrailingComma` at UTF-16 offset 2, length 1.
+The CLI rejects invalid UTF-8 bytes. Number source is preserved, including
+`9007199254740993` and `1e400`; numeric arithmetic still uses Double estimates.
+See [standards, delivery scope and exact I/O cases](docs/STANDARDS.md) for the
+clause mapping, duplicate-name and Unicode policies, limits and completion criteria.
+
 ## Public capabilities
 
 | Area | APIs | Useful for |
 |---|---|---|
+| Strict JSON | `parse_json` | Standard JSON grammar, explicit success/error, source-positioned representation |
 | Syntax | `scan`, `parse`, `node_value` | Tokens, JSONC options, tolerant trees, bounded diagnostics |
 | Navigation | `find_node`, `node_at_offset`, `get_location`, `to_pointer`, `visit` | Editor settings, structured inspection, source events |
 | Presentation | `format`, `strip_comments` | Document/range formatting, comment removal with offsets intact |
@@ -78,7 +103,8 @@ and display diagnostics; errors never include a partially committed transaction.
 Paths use `Key(String)` and `Index(Int)`. Replacement values are strict JSON
 source strings, so exact numeric spelling survives. All positions are UTF-16
 code units on both backends. Editing refuses malformed or duplicate-key
-documents; tolerant parsing remains available for editor diagnostics.
+documents; tolerant parsing remains available for editor diagnostics. Strict
+JSON parsing accepts duplicate-key syntax separately from these editing rules.
 
 ## Run the three integration examples
 

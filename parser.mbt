@@ -2,6 +2,7 @@
 priv struct JcParser {
   tokens : Array[Token]
   options : ParseOptions
+  report_duplicate_keys : Bool
   diagnostics : Array[Diagnostic]
   mut cursor : Int
   mut nodes : Int
@@ -196,7 +197,7 @@ fn JcParser::container(self : JcParser, depth : Int, object : Bool) -> Node {
             children: [],
           }
       }
-      if members.contains(key_token.value) {
+      if self.report_duplicate_keys && members.contains(key_token.value) {
         self.issue(
           "DuplicateKey", key_token, "duplicate object key; edits require unambiguous paths",
         )
@@ -266,12 +267,10 @@ fn JcParser::container(self : JcParser, depth : Int, object : Bool) -> Node {
 }
 
 ///|
-/// Parse a tolerant, source-positioned JSONC tree. Diagnostics make partial trees
-/// unsuitable for mutation. Duplicate keys are retained, diagnosed, and project
-/// to last-key-wins Json. Depth is 1..512, diagnostics 1..1000; values <=100000.
-pub fn parse(
+fn jc_parse_document(
   text : String,
-  options? : ParseOptions = ParseOptions::default(),
+  options : ParseOptions,
+  report_duplicate_keys : Bool,
 ) -> Document {
   let tokens = scan(text)
   let diagnostics : Array[Diagnostic] = []
@@ -291,6 +290,7 @@ pub fn parse(
   let parser : JcParser = {
     tokens: significant,
     options,
+    report_duplicate_keys,
     diagnostics,
     cursor: 0,
     nodes: 0,
@@ -327,4 +327,46 @@ pub fn parse(
     )
   }
   { text, tokens, root, diagnostics, }
+}
+
+///|
+/// Parse a tolerant, source-positioned JSONC tree. Diagnostics make partial trees
+/// unsuitable for mutation. Duplicate keys are retained, diagnosed, and project
+/// to last-key-wins Json. Depth is 1..512, diagnostics 1..1000; values <=100000.
+pub fn parse(
+  text : String,
+  options? : ParseOptions = ParseOptions::default(),
+) -> Document {
+  jc_parse_document(text, options, true)
+}
+
+///|
+/// Parse strict JSON syntax: no comments, trailing commas or empty documents.
+/// All six JSON types and root scalars are accepted. Numeric source spelling is
+/// preserved independently of the approximate Double projection. Duplicate
+/// object keys are syntactically accepted and retained in source order; their
+/// Json projection is last-key-wins, while find_node rejects ambiguous paths.
+/// Syntax/resource errors return bounded diagnostics instead of a partial tree.
+/// Limits are the same as parse: depth 1..512, errors 1..1000, <=100000 values.
+pub fn parse_json(
+  text : String,
+  max_depth? : Int = 128,
+  max_errors? : Int = 100,
+) -> Result[Document, Array[Diagnostic]] {
+  let document = jc_parse_document(
+    text,
+    {
+      allow_comments: false,
+      allow_trailing_comma: false,
+      allow_empty: false,
+      max_depth,
+      max_errors,
+    },
+    false,
+  )
+  if document.diagnostics.is_empty() {
+    Ok(document)
+  } else {
+    Err(document.diagnostics)
+  }
 }

@@ -1,6 +1,6 @@
 name = "YeeHh2004/moonjsonc"
 
-version = "0.1.0"
+version = "0.1.1"
 
 readme = "README.md"
 
@@ -14,4 +14,4 @@ preferred_target = "wasm-gc"
 
 supported_targets = "+js+wasm-gc"
 
-description = "Source-preserving JSON/JSONC editing, tolerant syntax trees, formatting and transactional configuration changes in MoonBit"
+description = "Strict standard JSON parsing and source-preserving JSONC editing, formatting and transactions in MoonBit"

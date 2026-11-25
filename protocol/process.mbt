@@ -249,6 +249,31 @@ pub fn process(text : String) -> String {
     Err(e) => return failure(e).stringify()
   }
   let response : Json = match request.op {
+    "parse-json" | "check-json" =>
+      match
+        @jsonc.parse_json(
+          request.source,
+          max_depth=parse_options.max_depth,
+          max_errors=parse_options.max_errors,
+        ) {
+        Ok(doc) =>
+          {
+            "ok": true,
+            "valid": true,
+            "diagnostics": diagnostics([]),
+            "tree": match doc.root {
+              Some(n) => node_json(request.source, n)
+              None => Json::null()
+            },
+          }
+        Err(items) =>
+          {
+            "ok": true,
+            "valid": false,
+            "diagnostics": diagnostics(items),
+            "tree": Json::null(),
+          }
+      }
     "parse" | "check" => {
       let doc = @jsonc.parse(request.source, options=parse_options)
       {

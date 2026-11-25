@@ -24,6 +24,8 @@ pub fn node_value(Node) -> Json
 
 pub fn parse(String, options? : ParseOptions) -> Document
 
+pub fn parse_json(String, max_depth? : Int, max_errors? : Int) -> Result[Document, Array[Diagnostic]]
+
 pub fn scan(String, ignore_trivia? : Bool) -> Array[Token]
 
 pub fn strip_comments(String, replace_with_spaces? : Bool) -> String

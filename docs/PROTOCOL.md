@@ -16,6 +16,7 @@ const result = JSON.parse(moonjsonc(JSON.stringify({
 
 | op | Additional fields | Response payload |
 |---|---|---|
+| `parse-json`, `check-json` | optional `maxDepth`, `maxErrors` inside `options` | Strict JSON `valid`, `diagnostics`, `tree`; invalid input has null tree |
 | `parse`, `check` | optional `options` | `valid`, `diagnostics`, `tree` |
 | `scan` | `ignoreTrivia?:boolean` | `tokens` |
 | `find` | `path` | `node` or null, diagnostics |
@@ -39,6 +40,13 @@ Options: `allowComments`, `allowTrailingComma`, `allowEmpty`, `maxDepth`,
 `maxErrors` for inspection; `indentSize`, `useTabs`, `eol`, `finalNewline` for
 formatting/edit generation. Structural edits always validate source as JSONC
 with duplicates refused; parse options cannot bypass editing validation.
+
+`parse-json` and `check-json` use `parse_json`: extensions remain disabled even
+when permissive options are supplied. Duplicate property syntax succeeds and
+all properties stay in the tree; this does not permit ambiguous edits. The CLI
+has commands with the same names and rejects invalid UTF-8 before this protocol.
+Syntax failure is `{ok:true, valid:false, diagnostics:[...], tree:null}` and CLI
+exit code 1; a successfully processed request is distinct from valid source.
 
 An error returns `{ok:false, code, error, diagnostics}`. Successful parsing may
 still return `valid:false` and a partial tree, because tolerance is intentional.

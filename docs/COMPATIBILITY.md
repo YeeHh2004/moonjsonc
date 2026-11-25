@@ -9,6 +9,7 @@ and does not claim complete JavaScript API or byte-for-byte output compatibility
 
 | Reference functionality | MoonJSONC public API | Contract |
 |---|---|---|
+| Standard JSON | `parse_json` | Independent strict grammar entry point; six root types, no extensions, duplicate names retained |
 | Scanner | `scan` | Source spans, trivia mode, decoded strings, lexical errors; returns an array rather than a mutable scanner cursor |
 | Tolerant parse / parseTree | `parse`, `node_value` | Partial trees, options, diagnostics and original source |
 | Visitor | `visit` | Source-ordered events; callback can stop all delivery; no subtree-pruning callback contract |
@@ -23,7 +24,8 @@ Important deliberate differences:
 
 - Defaults allow trailing commas. Use explicit parse options when comparing
   strict JSON or the reference parser's defaults.
-- Duplicate keys are diagnosed and cannot be edited ambiguously.
+- `parse` diagnoses duplicate keys for configuration safety; `parse_json`
+  accepts and retains them as standard JSON syntax. Editing refuses ambiguity.
 - Formatting refuses erroneous documents; tolerant inspection still works.
 - Formatting and insertion layout follows this library's contract, not the
   reference's exact whitespace/edit partition strategy. There is no custom
