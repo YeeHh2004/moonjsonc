@@ -22,7 +22,8 @@ Usage: node cli/moonjsonc.mjs COMMAND FILE [ARGUMENTS] [--write] [--json] [--che
   request REQUEST_JSON_FILE       execute the documented JSON transport
 Changes print to stdout unless --write is explicitly supplied.
 FILE '-' reads stdin. --write requires a regular file and verifies it is unchanged.
-All input files and stdin require valid UTF-8. A leading BOM is preserved and rejected.
+All input files and stdin require valid UTF-8. A leading BOM remains visible to
+inspection commands and is rejected by parsing/editing commands.
 `;
 
 function decodeUtf8(bytes, description) {
